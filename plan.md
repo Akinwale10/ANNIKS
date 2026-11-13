@@ -38,3 +38,6 @@ Chosen direction: **Editorial Nigerian market luxe**.
 - `client/public/manus-routes.json`: route manifest for page discovery.
 - `drizzle/schema.ts`, `server/db.ts`, `server/routers.ts`: durable catalog/order extension points.
 - `plan.md` and `TODO.md`: scope and delivery record.
+
+## Upgrade completed in this iteration
+The storefront is now route-based rather than anchor-only: `/shop`, `/food`, `/shades`, `/perfumes`, `/product/:slug`, `/services`, `/about`, `/blog`, `/contact` and `/admin` each render a dedicated page surface. Shared navigation, footer, product cards and catalog helpers keep the pages consistent. The managed database now owns `products` and `orders`; public tRPC procedures support catalog lookup and order creation, while admin-only procedures support analytics, product creation/archive and order status changes. The cart remains browser-persistent so browsing across pages does not lose the customer’s selections, and checkout records the order before opening WhatsApp.

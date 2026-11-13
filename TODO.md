@@ -13,8 +13,9 @@
 
 ## Backend-ready administration
 - [x] The initialized server/database/auth stack remains intact, and `/admin` uses the starter’s real Manus OAuth session and role check.
-- [ ] Durable product, stock, order, blog, review, contact and analytics CRUD still needs to be connected to Drizzle tables and server procedures; the dashboard entry point and data shape are ready for that extension.
-- [x] The project has route-ready entries for Home, Shop, Food, Shades, Perfumes, Services, About Us, Blog, Contact Us and Admin.
+- [x] Durable product, stock, order and analytics flows are connected to Drizzle tables and server procedures; admin users can add/archive products, inspect analytics, view orders and update order status.
+- [ ] Blog posts, customer reviews, newsletter subscribers, homepage banners and contact enquiries still use the public-page presentation layer and need their own CRUD tables/procedures if the business wants those managed from admin.
+- [x] The project has real route entries for Home, Shop, Food, Shades, Perfumes, Product detail, Services, About Us, Blog, Contact Us and Admin.
 
 ## Delivery quality
 - [x] `/manus-routes.json` exists and matches the implemented routes.
