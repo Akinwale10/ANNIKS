@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { fromApiProduct } from "@/lib/catalog";
 
 type Category = "All" | "Food" | "Shades" | "Perfumes";
 type Product = {
@@ -30,6 +32,7 @@ type Product = {
   price: number;
   stock: string;
   badge?: string;
+  featured?: boolean;
   image: string;
 };
 
@@ -52,6 +55,8 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const liveCatalog = trpc.catalog.list.useQuery(undefined, { retry: false });
+  const storefrontProducts = useMemo(() => liveCatalog.data?.length ? liveCatalog.data.map(fromApiProduct) : products, [liveCatalog.data]);
 
   useEffect(() => {
     const saved = localStorage.getItem("anikks-cart");
@@ -61,13 +66,13 @@ export default function Home() {
     localStorage.setItem("anikks-cart", JSON.stringify(cart));
   }, [cart]);
 
-  const filteredProducts = useMemo(() => products.filter((product) => {
+  const filteredProducts = useMemo(() => storefrontProducts.filter((product) => {
     const matchesCategory = category === "All" || product.category === category;
     const text = `${product.name} ${product.description} ${product.category}`.toLowerCase();
     return matchesCategory && text.includes(query.toLowerCase());
-  }), [category, query]);
+  }).sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured))), [category, query, storefrontProducts]);
 
-  const cartItems = products.filter((product) => cart[product.id]);
+  const cartItems = storefrontProducts.filter((product) => cart[product.id]);
   const cartCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
   const cartTotal = cartItems.reduce((sum, product) => sum + product.price * cart[product.id], 0);
 

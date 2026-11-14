@@ -2,7 +2,7 @@ import { ArrowRight, Minus, Plus, Search, ShoppingBag, X } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import { PageShell } from "@/components/SiteShell";
-import { products, naira, type Category } from "@/lib/catalog";
+import { products, fromApiProduct, naira, type Category } from "@/lib/catalog";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -12,14 +12,16 @@ export default function Shop() {
   const [bagOpen, setBagOpen] = useState(false);
   const [cart, setCart] = useState<Record<number, number>>({});
   const createOrder = trpc.orders.create.useMutation();
+  const liveCatalog = trpc.catalog.list.useQuery(undefined, { retry: false });
+  const storefrontProducts = useMemo(() => liveCatalog.data?.length ? liveCatalog.data.map(fromApiProduct) : products, [liveCatalog.data]);
 
   useEffect(() => {
     try { setCart(JSON.parse(localStorage.getItem("anikks-cart") || "{}")); } catch { setCart({}); }
     if (window.location.hash === "#bag") setBagOpen(true);
   }, []);
 
-  const filtered = useMemo(() => products.filter((product) => (category === "All" || product.category === category) && `${product.name} ${product.description}`.toLowerCase().includes(query.toLowerCase())), [category, query]);
-  const items = products.filter((product) => cart[product.id]);
+  const filtered = useMemo(() => storefrontProducts.filter((product) => (category === "All" || product.category === category) && `${product.name} ${product.description}`.toLowerCase().includes(query.toLowerCase())), [category, query, storefrontProducts]);
+  const items = storefrontProducts.filter((product) => cart[product.id]);
   const count = Object.values(cart).reduce((sum, item) => sum + item, 0);
   const total = items.reduce((sum, product) => sum + product.price * cart[product.id], 0);
 

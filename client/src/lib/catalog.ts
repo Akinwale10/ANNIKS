@@ -1,5 +1,6 @@
 export type Category = "Food" | "Shades" | "Perfumes";
-export type Product = { id: number; slug: string; name: string; category: Category; description: string; price: number; stock: string; badge?: string; image: string; details: string[] };
+export type Product = { id: number; slug: string; name: string; category: Category; description: string; price: number; stock: string; badge?: string; image: string; details: string[]; featured?: boolean };
+export type ApiProduct = { id: number; slug: string; name: string; category: Category; description: string; price: number; stock: number; imageUrl: string; badge?: string | null; featured?: boolean };
 
 const imageBase = "/manus-storage/async-images/OI9xBlawlZzrQe1CFt29rD";
 export const products: Product[] = [
@@ -19,3 +20,4 @@ export const categoryContent: Record<Category, { eyebrow: string; title: string;
 
 export const naira = (value: number) => `₦${value.toLocaleString("en-NG")}`;
 export const getProduct = (slug: string) => products.find((product) => product.slug === slug);
+export const fromApiProduct = (product: ApiProduct): Product => ({ ...product, stock: product.stock <= 0 ? "Out of stock" : product.stock <= 5 ? "Low stock" : "In stock", badge: product.badge ?? undefined, image: product.imageUrl, details: ["Quality checked by the Anikks team", "Available for WhatsApp ordering", "Delivery confirmed with your order"] });
