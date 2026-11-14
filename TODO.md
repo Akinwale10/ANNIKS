@@ -3,7 +3,8 @@
 ## Customer storefront
 - [x] The site uses the Anikks palette (#24310B, #FF8500, #FFFCEF, #E5092B, white, dark text) and presents a premium Nigerian retail/lifestyle visual system.
 - [x] The responsive navigation includes Home, Shop, About Us, Our Services, Blog and Contact Us, plus search, cart counter, account affordance, mobile menu and sticky behavior.
-- [x] The homepage includes the requested hero headline, supporting copy, SHOP NOW and EXPLORE OUR SERVICES CTAs, category cards for Food/Shades/Perfumes, featured product content, services, about, testimonials, blog updates, newsletter, contact details and footer links.
+- [x] The homepage includes the requested hero headline, supporting copy, SHOP NOW and EXPLORE OUR SERVICES CTAs, category cards for Food/Shades/Perfumes, featured product content, a services teaser, newsletter, contact details and footer links.
+- [x] The homepage is now intentionally focused: deeper About, testimonial and Journal content is available on dedicated routes instead of being stacked into the landing page; header links, category cards, hero CTAs and footer links navigate to real pages.
 - [x] Product cards show an image, name, description, Nigerian Naira display, stock state, Add to Cart and View Product affordances; sample prices are clearly labelled in the seeded demo catalog until admin-managed pricing is connected.
 
 ## Shopping and contact behavior
