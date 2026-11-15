@@ -29,3 +29,4 @@
 - [x] The UI fits common phone, tablet and desktop viewports without horizontal overflow; narrow-phone grids, drawers, forms and the mobile navigation adapt to the available screen width.
 - [x] The hero artwork is a smooth product carousel driven by live catalog images, with fallback brand imagery, auto-advance, hover/focus pause, previous/next controls, slide dots, product captions and links to the relevant product or category page.
 - [x] Homepage product pictures and names in “Find your next favourite” open the matching product-detail route; cart rows expose a visible trash/delete action; and an open mobile hamburger menu closes when the user taps outside it.
+- [x] Hero text uses a staggered typewriter effect for the eyebrow, headline, supporting copy and note, with a blinking caret, delayed CTA reveal and immediate full-text rendering under `prefers-reduced-motion`.

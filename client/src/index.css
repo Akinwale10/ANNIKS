@@ -34,3 +34,6 @@
 /* Product and menu interaction polish */
 .product-image{position:relative}.product-image-link{position:absolute;inset:0;display:block;z-index:0}.product-image-link img{position:absolute;inset:0}.product-badge,.quick-add{z-index:1}.product-card h3 a{color:inherit}.product-card h3 a:hover{color:var(--orange)}.remove-item{color:var(--red)!important;margin-left:8px!important}.menu-backdrop{display:none}
 @media(max-width:720px){.menu-backdrop{display:block;position:fixed;inset:0;z-index:30;background:rgba(36,49,11,.08);cursor:pointer}.main-nav.open{z-index:35}}
+
+/* Hero typewriter treatment */
+.typewriter-text{display:inline}.typewriter-caret{display:inline-block;margin-left:2px;color:var(--orange);font-family:DM Mono,monospace;font-size:.72em;line-height:0;animation:typewriterBlink .8s steps(1,end) infinite}.typewriter-caret.complete{opacity:0;animation:none}.typewriter-actions{opacity:0;animation:heroActionsReveal .7s ease 3.1s forwards}@keyframes typewriterBlink{0%,48%{opacity:1}49%,100%{opacity:0}}@keyframes heroActionsReveal{to{opacity:1}}@media(prefers-reduced-motion:reduce){.typewriter-actions{opacity:1;animation:none}.typewriter-caret{display:none}}

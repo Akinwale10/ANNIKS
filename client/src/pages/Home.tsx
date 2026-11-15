@@ -52,6 +52,27 @@ const products: Product[] = [
 
 const naira = (value: number) => `₦${value.toLocaleString("en-NG")}`;
 
+function TypewriterText({ text, delay = 0, speed = 42 }: { text: string; delay?: number; speed?: number }) {
+  const [value, setValue] = useState("");
+  useEffect(() => {
+    let interval: number | undefined;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) { setValue(text); return undefined; }
+    setValue("");
+    const start = window.setTimeout(() => {
+      let index = 0;
+      interval = window.setInterval(() => {
+        index += 1;
+        setValue(text.slice(0, index));
+        if (index >= text.length && interval) window.clearInterval(interval);
+      }, speed);
+    }, delay);
+    return () => { window.clearTimeout(start); if (interval) window.clearInterval(interval); };
+  }, [delay, speed, text]);
+  const complete = value.length === text.length;
+  return <span className="typewriter-text" aria-label={text}>{value}<span className={`typewriter-caret ${complete ? "complete" : ""}`} aria-hidden="true">▌</span></span>;
+}
+
 export default function Home() {
   const [category, setCategory] = useState<Category>("All");
   const [query, setQuery] = useState("");
@@ -142,11 +163,11 @@ export default function Home() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> Your everyday, elevated</div>
-            <h1>Good taste.<br /><em>Great finds.</em></h1>
-            <p className="hero-lede">Your one-stop shop for food, fashion and everyday essentials. Curated with care, delivered with a smile.</p>
-            <div className="hero-actions"><Link className="button button-orange" href="/shop">Shop the edit <ArrowRight size={17} /></Link><Link className="text-link" href="/services">Explore our services <ArrowRight size={16} /></Link></div>
-            <div className="hero-note"><span className="note-dot" /><span>Small joys, thoughtfully sourced.</span></div>
+            <div className="eyebrow"><span className="eyebrow-line" /> <TypewriterText text="Your everyday, elevated" delay={120} speed={48} /></div>
+            <h1><TypewriterText text="Good taste." delay={420} speed={75} /><br /><em><TypewriterText text="Great finds." delay={1200} speed={75} /></em></h1>
+            <p className="hero-lede"><TypewriterText text="Your one-stop shop for food, fashion and everyday essentials. Curated with care, delivered with a smile." delay={2100} speed={24} /></p>
+            <div className="hero-actions typewriter-actions"><Link className="button button-orange" href="/shop">Shop the edit <ArrowRight size={17} /></Link><Link className="text-link" href="/services">Explore our services <ArrowRight size={16} /></Link></div>
+            <div className="hero-note"><span className="note-dot" /><span><TypewriterText text="Small joys, thoughtfully sourced." delay={5000} speed={34} /></span></div>
           </div>
           <div className="hero-art" onMouseEnter={() => setHeroPaused(true)} onMouseLeave={() => setHeroPaused(false)} onFocus={() => setHeroPaused(true)} onBlur={() => setHeroPaused(false)}>
             <div className="hero-slides" aria-live="polite">
