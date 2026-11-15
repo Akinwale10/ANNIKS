@@ -1,28 +1,79 @@
-import { ArrowLeft, BarChart3, Boxes, ClipboardList, LogOut, Package, Plus, Settings2, Trash2, UsersRound, X } from "lucide-react";
+import { ArrowLeft, BarChart3, Boxes, ClipboardList, ImagePlus, LogOut, Package, Plus, Settings2, Trash2, Upload, UsersRound, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
+const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
+type AcceptedImageType = (typeof acceptedImageTypes)[number];
+
 export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const isAdmin = Boolean(isAuthenticated && user?.role === "admin");
   const utils = trpc.useUtils();
-  const bootstrapAdmin = trpc.auth.bootstrapAdmin.useMutation({ onSuccess: async () => { await utils.auth.me.invalidate(); toast.success("Administrator access activated."); }, onError: (error) => toast.error(error.message) });
+  const [addOpen, setAddOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+
+  const bootstrapAdmin = trpc.auth.bootstrapAdmin.useMutation({
+    onSuccess: async () => { await utils.auth.me.invalidate(); toast.success("Administrator access activated."); },
+    onError: (error) => toast.error(error.message),
+  });
+  const uploadImage = trpc.admin.uploadProductImage.useMutation({
+    onSuccess: (result) => { setImageUrl(result.url); toast.success("Product picture uploaded."); },
+    onError: (error) => toast.error(error.message),
+  });
   const analytics = trpc.admin.analytics.useQuery(undefined, { enabled: isAdmin });
   const orders = trpc.admin.orders.useQuery(undefined, { enabled: isAdmin });
   const products = trpc.admin.products.useQuery(undefined, { enabled: isAdmin });
-  const createProduct = trpc.admin.createProduct.useMutation({ onSuccess: async () => { await Promise.all([utils.admin.products.invalidate(), utils.admin.analytics.invalidate()]); setAddOpen(false); toast.success("Product added to the catalog."); } });
-  const deleteProduct = trpc.admin.deleteProduct.useMutation({ onSuccess: async () => { await Promise.all([utils.admin.products.invalidate(), utils.admin.analytics.invalidate()]); toast.success("Product archived."); } });
+  const createProduct = trpc.admin.createProduct.useMutation({
+    onSuccess: async () => { await Promise.all([utils.admin.products.invalidate(), utils.admin.analytics.invalidate(), utils.catalog.list.invalidate()]); setImageUrl(""); setAddOpen(false); toast.success("Product added to the catalog and storefront."); },
+    onError: (error) => toast.error(error.message),
+  });
+  const deleteProduct = trpc.admin.deleteProduct.useMutation({
+    onSuccess: async () => { await Promise.all([utils.admin.products.invalidate(), utils.admin.analytics.invalidate(), utils.catalog.list.invalidate()]); toast.success("Product archived."); },
+    onError: (error) => toast.error(error.message),
+  });
   const updateStatus = trpc.admin.updateOrderStatus.useMutation({ onSuccess: () => { void utils.admin.orders.invalidate(); toast.success("Order status updated."); } });
-  const [addOpen, setAddOpen] = useState(false);
 
   if (loading) return <div className="admin-loading">Loading your workspace…</div>;
   if (!isAuthenticated) return <div className="admin-login"><span className="brand-mark">✦</span><h1>Anikks admin</h1><p>Sign in with your Manus account to manage products, orders and site content.</p><button className="admin-primary" onClick={() => startLogin()}>Sign in to continue</button><a href="/">Return to storefront</a></div>;
   if (!isAdmin) return <div className="admin-login"><span className="brand-mark">✦</span><h1>Finish setup</h1><p>Your account is signed in, but the dashboard has no administrator yet. If this is the first setup for Anikks, activate your account as the initial administrator.</p><button className="admin-primary" disabled={bootstrapAdmin.isPending} onClick={() => bootstrapAdmin.mutate()}>{bootstrapAdmin.isPending ? "Activating…" : "Activate admin access"}</button><a href="/">Return to storefront</a></div>;
 
-  const statCards = [{ label: "Total orders", value: analytics.data?.orders ?? "—", note: "All time", icon: ClipboardList }, { label: "Products", value: analytics.data?.products ?? "—", note: "Active catalog", icon: Boxes }, { label: "Available stock", value: analytics.data?.stock ?? "—", note: "Across 3 categories", icon: Package }, { label: "Sales overview", value: analytics.data ? `₦${analytics.data.sales.toLocaleString("en-NG")}` : "—", note: "All recorded orders", icon: BarChart3 }];
-  const submitProduct = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const form = new FormData(event.currentTarget); createProduct.mutate({ slug: String(form.get("slug")), name: String(form.get("name")), category: String(form.get("category")) as "Food" | "Shades" | "Perfumes", description: String(form.get("description")), price: Number(form.get("price")), stock: Number(form.get("stock")), imageUrl: String(form.get("imageUrl")), badge: String(form.get("badge") || "") || undefined, featured: form.get("featured") === "on", active: true }); };
-  return <div className="admin-shell"><aside className="admin-sidebar"><a href="/" className="brand inverse"><span className="brand-mark">✦</span><span>anikks<small>admin studio</small></span></a><nav><a className="active" href="#dashboard"><BarChart3 size={17} /> Overview</a><a href="#products"><Boxes size={17} /> Products</a><a href="#orders"><ClipboardList size={17} /> Orders</a><a href="#content"><Settings2 size={17} /> Site content</a><a href="#customers"><UsersRound size={17} /> Customers</a></nav><button className="admin-logout" onClick={() => logout()}><LogOut size={16} /> Sign out</button></aside><main className="admin-main"><div className="admin-top"><div><a className="back-link" href="/"><ArrowLeft size={15} /> Storefront</a><h1>Good morning, {user?.name?.split(" ")[0] || "Admin"}.</h1><p>Live catalog and order management for Anikks.</p></div><button className="admin-primary" onClick={() => setAddOpen(true)}><Plus size={16} /> Add product</button></div><section className="admin-stats" id="dashboard">{statCards.map((stat) => <div className="admin-stat" key={stat.label}><stat.icon size={18} /><span>{stat.label}</span><strong>{stat.value}</strong><small>{stat.note}</small></div>)}</section><section className="admin-panel" id="orders"><div className="panel-heading"><div><span className="admin-eyebrow">Needs attention</span><h2>Recent orders</h2></div></div><div className="order-table"><div className="order-row order-head"><span>Order</span><span>Customer</span><span>Status</span><span>Total</span></div>{orders.isLoading && <div className="panel-copy">Loading orders…</div>}{orders.data?.map((order) => <div className="order-row" key={order.id}><span className="order-id">{order.orderNumber}</span><span>{order.customerName}</span><span><select className="admin-status-select" value={order.status} onChange={(event) => updateStatus.mutate({ id: order.id, status: event.target.value as "pending" | "confirmed" | "processing" | "dispatched" | "completed" })}><option>pending</option><option>confirmed</option><option>processing</option><option>dispatched</option><option>completed</option></select></span><strong>₦{order.total.toLocaleString("en-NG")}</strong></div>)}{!orders.isLoading && !orders.data?.length && <div className="panel-copy">No WhatsApp or website orders have been recorded yet.</div>}</div></section><section className="admin-panel" id="products"><div className="panel-heading"><div><span className="admin-eyebrow">Catalog</span><h2>Product management</h2></div><span className="panel-copy">{products.data?.length || 0} active products</span></div><div className="admin-product-list">{products.data?.map((product) => <div className="admin-product-row" key={product.id}><img src={product.imageUrl} alt={product.name} /><div><strong>{product.name}</strong><span>{product.category} · ₦{product.price.toLocaleString("en-NG")} · {product.stock} in stock</span></div><button aria-label={`Archive ${product.name}`} onClick={() => deleteProduct.mutate({ id: product.id })}><Trash2 size={15} /></button></div>)}</div></section></main>{addOpen && <div className="modal-backdrop"><div className="checkout-modal admin-product-modal"><button className="modal-close" onClick={() => setAddOpen(false)}><X size={18} /></button><span className="eyebrow">Catalog</span><h2>Add a product</h2><form onSubmit={submitProduct}><label>Product name<input required name="name" placeholder="Classic Chin Chin" /></label><label>Slug<input required name="slug" placeholder="classic-chin-chin" /></label><label>Category<select name="category" defaultValue="Food"><option>Food</option><option>Shades</option><option>Perfumes</option></select></label><label>Description<textarea required name="description" rows={2} placeholder="A short product description" /></label><div className="admin-form-row"><label>Price<input required type="number" name="price" min="0" /></label><label>Stock<input required type="number" name="stock" min="0" /></label></div><label>Image URL<input required name="imageUrl" placeholder="/manus-storage/..." /></label><label>Badge (optional)<input name="badge" placeholder="Best seller" /></label><label className="checkbox-label"><input type="checkbox" name="featured" /> Mark as featured</label><button className="button button-orange full" type="submit" disabled={createProduct.isPending}>{createProduct.isPending ? "Saving…" : "Save product"}</button></form></div></div>}</div>;
+  const statCards = [
+    { label: "Total orders", value: analytics.data?.orders ?? "—", note: "All time", icon: ClipboardList },
+    { label: "Products", value: analytics.data?.products ?? "—", note: "Active catalog", icon: Boxes },
+    { label: "Available stock", value: analytics.data?.stock ?? "—", note: "Across 3 categories", icon: Package },
+    { label: "Sales overview", value: analytics.data ? `₦${analytics.data.sales.toLocaleString("en-NG")}` : "—", note: "All recorded orders", icon: BarChart3 },
+  ];
+
+  const openAddProduct = () => { setImageUrl(""); setAddOpen(true); };
+  const handleImagePick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!acceptedImageTypes.includes(file.type as AcceptedImageType)) { toast.error("Choose a JPG, PNG, WEBP or GIF image."); return; }
+    if (file.size > 8 * 1024 * 1024) { toast.error("Product images must be 8MB or smaller."); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") return;
+      uploadImage.mutate({ fileName: file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-"), contentType: file.type as AcceptedImageType, dataUrl: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
+  const submitProduct = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!imageUrl) { toast.error("Upload a product picture before saving."); return; }
+    const form = new FormData(event.currentTarget);
+    createProduct.mutate({ slug: String(form.get("slug")), name: String(form.get("name")), category: String(form.get("category")) as "Food" | "Shades" | "Perfumes", description: String(form.get("description")), price: Number(form.get("price")), stock: Number(form.get("stock")), imageUrl, badge: String(form.get("badge") || "") || undefined, featured: form.get("featured") === "on", active: true });
+  };
+
+  return <div className="admin-shell">
+    <aside className="admin-sidebar"><a href="/" className="brand inverse"><span className="brand-mark">✦</span><span>anikks<small>admin studio</small></span></a><nav><a className="active" href="#dashboard"><BarChart3 size={17} /> Overview</a><a href="#products"><Boxes size={17} /> Products</a><a href="#orders"><ClipboardList size={17} /> Orders</a><a href="#content"><Settings2 size={17} /> Site content</a><a href="#customers"><UsersRound size={17} /> Customers</a></nav><button className="admin-logout" onClick={() => logout()}><LogOut size={16} /> Sign out</button></aside>
+    <main className="admin-main"><div className="admin-top"><div><a className="back-link" href="/"><ArrowLeft size={15} /> Storefront</a><h1>Good morning, {user?.name?.split(" ")[0] || "Admin"}.</h1><p>Live catalog and order management for Anikks.</p></div><button className="admin-primary" onClick={openAddProduct}><Plus size={16} /> Add product</button></div>
+      <section className="admin-stats" id="dashboard">{statCards.map((stat) => <div className="admin-stat" key={stat.label}><stat.icon size={18} /><span>{stat.label}</span><strong>{stat.value}</strong><small>{stat.note}</small></div>)}</section>
+      <section className="admin-panel" id="orders"><div className="panel-heading"><div><span className="admin-eyebrow">Needs attention</span><h2>Recent orders</h2></div></div><div className="order-table"><div className="order-row order-head"><span>Order</span><span>Customer</span><span>Status</span><span>Total</span></div>{orders.isLoading && <div className="panel-copy">Loading orders…</div>}{orders.data?.map((order) => <div className="order-row" key={order.id}><span className="order-id">{order.orderNumber}</span><span>{order.customerName}</span><span><select className="admin-status-select" value={order.status} onChange={(event) => updateStatus.mutate({ id: order.id, status: event.target.value as "pending" | "confirmed" | "processing" | "dispatched" | "completed" })}><option>pending</option><option>confirmed</option><option>processing</option><option>dispatched</option><option>completed</option></select></span><strong>₦{order.total.toLocaleString("en-NG")}</strong></div>)}{!orders.isLoading && !orders.data?.length && <div className="panel-copy">No WhatsApp or website orders have been recorded yet.</div>}</div></section>
+      <section className="admin-panel" id="products"><div className="panel-heading"><div><span className="admin-eyebrow">Catalog</span><h2>Product management</h2></div><span className="panel-copy">{products.data?.length || 0} active products</span></div><div className="admin-product-list">{products.data?.map((product) => <div className="admin-product-row" key={product.id}><img src={product.imageUrl} alt={product.name} /><div><strong>{product.name}</strong><span>{product.category} · ₦{product.price.toLocaleString("en-NG")} · {product.stock} in stock</span></div><button aria-label={`Archive ${product.name}`} onClick={() => deleteProduct.mutate({ id: product.id })}><Trash2 size={15} /></button></div>)}</div></section>
+    </main>
+    {addOpen && <div className="modal-backdrop"><div className="checkout-modal admin-product-modal"><button className="modal-close" onClick={() => setAddOpen(false)}><X size={18} /></button><span className="eyebrow">Catalog</span><h2>Add a product</h2><form onSubmit={submitProduct}><label>Product name<input required name="name" placeholder="Classic Chin Chin" /></label><label>Slug<input required name="slug" placeholder="classic-chin-chin" /></label><label>Category<select name="category" defaultValue="Food"><option>Food</option><option>Shades</option><option>Perfumes</option></select></label><label>Description<textarea required name="description" rows={2} placeholder="A short product description" /></label><div className="admin-form-row"><label>Price<input required type="number" name="price" min="0" /></label><label>Stock<input required type="number" name="stock" min="0" /></label></div><label className="admin-upload-label"><span>Product picture</span><span className="admin-upload-box">{imageUrl ? <img src={imageUrl} alt="Selected product preview" /> : <><ImagePlus size={22} /><strong>{uploadImage.isPending ? "Uploading picture…" : "Choose from file manager"}</strong><small>JPG, PNG, WEBP or GIF · max 8MB</small></>}<input required={!imageUrl} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleImagePick} disabled={uploadImage.isPending} /></span></label><label>Badge (optional)<input name="badge" placeholder="Best seller" /></label><label className="checkbox-label"><input type="checkbox" name="featured" /> Mark as featured</label><button className="button button-orange full" type="submit" disabled={createProduct.isPending || uploadImage.isPending || !imageUrl}>{createProduct.isPending ? "Saving product…" : "Save product to storefront"}</button></form></div></div>}
+  </div>;
 }

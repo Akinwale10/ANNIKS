@@ -4,9 +4,15 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { bootstrapFirstAdmin, createOrder, createProduct, deleteProduct, getAnalytics, getProductBySlug, listOrders, listProducts, updateOrderStatus, updateProduct } from "./db";
+import { storagePut } from "./storage";
 
 const productInput = z.object({
   slug: z.string().min(2).max(160), name: z.string().min(2).max(160), category: z.enum(["Food", "Shades", "Perfumes"]), description: z.string().min(2), price: z.number().int().nonnegative(), stock: z.number().int().nonnegative(), imageUrl: z.string().url().or(z.string().startsWith("/")), badge: z.string().max(80).optional(), active: z.boolean().optional(), featured: z.boolean().optional(),
+});
+const imageUploadInput = z.object({
+  fileName: z.string().min(1).max(160).regex(/^[a-zA-Z0-9._-]+$/),
+  contentType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
+  dataUrl: z.string().startsWith("data:image/").max(12_000_000),
 });
 
 export const appRouter = router({
@@ -26,6 +32,12 @@ export const appRouter = router({
   admin: router({
     analytics: adminProcedure.query(() => getAnalytics()),
     products: adminProcedure.query(() => listProducts()),
+    uploadProductImage: adminProcedure.input(imageUploadInput).mutation(async ({ input }) => {
+      const encoded = input.dataUrl.slice(input.dataUrl.indexOf(",") + 1);
+      const bytes = Buffer.from(encoded, "base64");
+      if (bytes.length > 8 * 1024 * 1024) throw new Error("Product images must be 8MB or smaller.");
+      return storagePut(`products/${Date.now()}-${input.fileName}`, bytes, input.contentType);
+    }),
     createProduct: adminProcedure.input(productInput).mutation(({ input }) => createProduct({ ...input, imageUrl: input.imageUrl, active: input.active ?? true, featured: input.featured ?? false })),
     updateProduct: adminProcedure.input(productInput.extend({ id: z.number().int() })).mutation(({ input }) => { const { id, ...data } = input; return updateProduct(id, data); }),
     deleteProduct: adminProcedure.input(z.object({ id: z.number().int() })).mutation(({ input }) => deleteProduct(input.id)),
