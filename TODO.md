@@ -24,3 +24,4 @@
 - [x] TypeScript diagnostics and production build complete without actionable errors.
 - [x] The preview server listens on port 3000 and the website is ready for checkpointing to the canonical repository.
 - [x] The UI fits common phone, tablet and desktop viewports without horizontal overflow; narrow-phone grids, drawers, forms and the mobile navigation adapt to the available screen width.
+- [x] The hero artwork is a smooth product carousel driven by live catalog images, with fallback brand imagery, auto-advance, hover/focus pause, previous/next controls, slide dots, product captions and links to the relevant product or category page.

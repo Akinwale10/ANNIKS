@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Check,
+  ChevronLeft,
+  ChevronRight,
   ChevronDown,
   Instagram,
   Menu,
@@ -57,6 +59,29 @@ export default function Home() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const liveCatalog = trpc.catalog.list.useQuery(undefined, { retry: false });
   const storefrontProducts = useMemo(() => liveCatalog.data?.length ? liveCatalog.data.map(fromApiProduct) : products, [liveCatalog.data]);
+  const heroSlides = useMemo(() => {
+    const liveSlides = storefrontProducts.slice(0, 3).map((product) => {
+      const slug = (product as unknown as { slug?: string }).slug;
+      return { image: product.image, kicker: product.category, name: product.name, href: slug ? `/product/${slug}` : "/shop" };
+    });
+    const fallbackSlides = [
+      { image: `${imageBase}/image-1.webp`, kicker: "The Anikks edit", name: "Made for your kind of day", href: "/shop" },
+      { image: `${imageBase}/image-2.webp`, kicker: "Food favourites", name: "Good things for the table", href: "/food" },
+      { image: `${imageBase}/image-3.webp`, kicker: "The eyewear edit", name: "Your everyday cool", href: "/shades" },
+    ];
+    return [...liveSlides, ...fallbackSlides].slice(0, 3);
+  }, [storefrontProducts]);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
+
+  useEffect(() => {
+    if (heroIndex >= heroSlides.length) setHeroIndex(0);
+  }, [heroIndex, heroSlides.length]);
+  useEffect(() => {
+    if (heroPaused || heroSlides.length < 2) return;
+    const timer = window.setInterval(() => setHeroIndex((current) => (current + 1) % heroSlides.length), 5200);
+    return () => window.clearInterval(timer);
+  }, [heroPaused, heroSlides.length]);
 
   useEffect(() => {
     const saved = localStorage.getItem("anikks-cart");
@@ -118,7 +143,17 @@ export default function Home() {
             <div className="hero-actions"><Link className="button button-orange" href="/shop">Shop the edit <ArrowRight size={17} /></Link><Link className="text-link" href="/services">Explore our services <ArrowRight size={16} /></Link></div>
             <div className="hero-note"><span className="note-dot" /><span>Small joys, thoughtfully sourced.</span></div>
           </div>
-          <div className="hero-art"><img src={`${imageBase}/image-1.webp`} alt="Anikks treats, fragrance and fashion edit" /><div className="hero-sticker"><Sparkles size={15} /><span>Made for<br /><strong>your kind of day</strong></span></div><div className="hero-index">01 <span>/</span> 03</div></div>
+          <div className="hero-art" onMouseEnter={() => setHeroPaused(true)} onMouseLeave={() => setHeroPaused(false)} onFocus={() => setHeroPaused(true)} onBlur={() => setHeroPaused(false)}>
+            <div className="hero-slides" aria-live="polite">
+              {heroSlides.map((slide, index) => <Link className={`hero-slide ${index === heroIndex ? "active" : ""}`} href={slide.href} key={`${slide.image}-${index}`} tabIndex={index === heroIndex ? 0 : -1} aria-hidden={index !== heroIndex}>
+                <img src={slide.image} alt={`${slide.kicker}: ${slide.name}`} />
+                <span className="hero-slide-caption"><small>{slide.kicker}</small><strong>{slide.name}</strong></span>
+              </Link>)}
+            </div>
+            <div className="hero-sticker"><Sparkles size={15} /><span>Made for<br /><strong>your kind of day</strong></span></div>
+            <div className="hero-index">{String(heroIndex + 1).padStart(2, "0")} <span>/</span> {String(heroSlides.length).padStart(2, "0")}</div>
+            <div className="hero-controls"><button type="button" aria-label="Previous hero slide" onClick={() => setHeroIndex((heroIndex - 1 + heroSlides.length) % heroSlides.length)}><ChevronLeft size={16} /></button><div className="hero-dots">{heroSlides.map((slide, index) => <button type="button" key={slide.image} aria-label={`Go to hero slide ${index + 1}`} className={index === heroIndex ? "active" : ""} onClick={() => setHeroIndex(index)} />)}</div><button type="button" aria-label="Next hero slide" onClick={() => setHeroIndex((heroIndex + 1) % heroSlides.length)}><ChevronRight size={16} /></button></div>
+          </div>
         </section>
 
         <section className="category-section" aria-label="Shop by category">
