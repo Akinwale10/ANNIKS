@@ -14,6 +14,7 @@
 
 ## Backend-ready administration
 - [x] The initialized server/database/auth stack remains intact, `/admin` uses the starter’s real Manus OAuth session and role check, and the OAuth callback accepts the hardened Preview cookie plus a compatible fallback cookie so state survives the portal redirect.
+- [x] A signed-in setup user no longer gets a dead-end “Access requested” screen: when no administrator exists, the dashboard offers a one-time authenticated “Activate admin access” action; once claimed, the normal admin role guard remains active.
 - [x] Durable product, stock, order and analytics flows are connected to Drizzle tables and server procedures; admin users can add/archive products, inspect analytics, view orders and update order status.
 - [x] Admin-created products are read by the homepage, Shop page, Food/Shades/Perfumes category pages and product-detail routes, with the seeded catalog retained only as a fallback when the database has no rows.
 - [ ] Blog posts, customer reviews, newsletter subscribers, homepage banners and contact enquiries still use the public-page presentation layer and need their own CRUD tables/procedures if the business wants those managed from admin.

@@ -2,8 +2,8 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, publicProcedure, router } from "./_core/trpc";
-import { createOrder, createProduct, deleteProduct, getAnalytics, getProductBySlug, listOrders, listProducts, updateOrderStatus, updateProduct } from "./db";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { bootstrapFirstAdmin, createOrder, createProduct, deleteProduct, getAnalytics, getProductBySlug, listOrders, listProducts, updateOrderStatus, updateProduct } from "./db";
 
 const productInput = z.object({
   slug: z.string().min(2).max(160), name: z.string().min(2).max(160), category: z.enum(["Food", "Shades", "Perfumes"]), description: z.string().min(2), price: z.number().int().nonnegative(), stock: z.number().int().nonnegative(), imageUrl: z.string().url().or(z.string().startsWith("/")), badge: z.string().max(80).optional(), active: z.boolean().optional(), featured: z.boolean().optional(),
@@ -14,6 +14,7 @@ export const appRouter = router({
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }),
+    bootstrapAdmin: protectedProcedure.mutation(({ ctx }) => bootstrapFirstAdmin(ctx.user.openId)),
   }),
   catalog: router({
     list: publicProcedure.input(z.object({ category: z.enum(["Food", "Shades", "Perfumes"]).optional(), search: z.string().optional(), featured: z.boolean().optional() }).optional()).query(({ input }) => listProducts(input)),

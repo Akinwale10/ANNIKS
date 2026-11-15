@@ -9,6 +9,7 @@ export default function Admin() {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const isAdmin = Boolean(isAuthenticated && user?.role === "admin");
   const utils = trpc.useUtils();
+  const bootstrapAdmin = trpc.auth.bootstrapAdmin.useMutation({ onSuccess: async () => { await utils.auth.me.invalidate(); toast.success("Administrator access activated."); }, onError: (error) => toast.error(error.message) });
   const analytics = trpc.admin.analytics.useQuery(undefined, { enabled: isAdmin });
   const orders = trpc.admin.orders.useQuery(undefined, { enabled: isAdmin });
   const products = trpc.admin.products.useQuery(undefined, { enabled: isAdmin });
@@ -19,7 +20,7 @@ export default function Admin() {
 
   if (loading) return <div className="admin-loading">Loading your workspace…</div>;
   if (!isAuthenticated) return <div className="admin-login"><span className="brand-mark">✦</span><h1>Anikks admin</h1><p>Sign in with your Manus account to manage products, orders and site content.</p><button className="admin-primary" onClick={() => startLogin()}>Sign in to continue</button><a href="/">Return to storefront</a></div>;
-  if (!isAdmin) return <div className="admin-login"><span className="brand-mark">✦</span><h1>Access requested</h1><p>Your account is signed in, but it does not have administrator access yet.</p><a href="/">Return to storefront</a></div>;
+  if (!isAdmin) return <div className="admin-login"><span className="brand-mark">✦</span><h1>Finish setup</h1><p>Your account is signed in, but the dashboard has no administrator yet. If this is the first setup for Anikks, activate your account as the initial administrator.</p><button className="admin-primary" disabled={bootstrapAdmin.isPending} onClick={() => bootstrapAdmin.mutate()}>{bootstrapAdmin.isPending ? "Activating…" : "Activate admin access"}</button><a href="/">Return to storefront</a></div>;
 
   const statCards = [{ label: "Total orders", value: analytics.data?.orders ?? "—", note: "All time", icon: ClipboardList }, { label: "Products", value: analytics.data?.products ?? "—", note: "Active catalog", icon: Boxes }, { label: "Available stock", value: analytics.data?.stock ?? "—", note: "Across 3 categories", icon: Package }, { label: "Sales overview", value: analytics.data ? `₦${analytics.data.sales.toLocaleString("en-NG")}` : "—", note: "All recorded orders", icon: BarChart3 }];
   const submitProduct = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const form = new FormData(event.currentTarget); createProduct.mutate({ slug: String(form.get("slug")), name: String(form.get("name")), category: String(form.get("category")) as "Food" | "Shades" | "Perfumes", description: String(form.get("description")), price: Number(form.get("price")), stock: Number(form.get("stock")), imageUrl: String(form.get("imageUrl")), badge: String(form.get("badge") || "") || undefined, featured: form.get("featured") === "on", active: true }); };

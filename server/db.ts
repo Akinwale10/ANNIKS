@@ -27,6 +27,15 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
 export async function getUserByOpenId(openId: string) { const db = await getDb(); if (!db) return undefined; const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1); return result[0]; }
 
+export async function bootstrapFirstAdmin(openId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const existingAdmin = await db.select({ id: users.id }).from(users).where(eq(users.role, "admin")).limit(1);
+  if (existingAdmin.length) throw new Error("An administrator already exists. Ask the project owner to grant access.");
+  await db.update(users).set({ role: "admin" }).where(eq(users.openId, openId));
+  return { success: true } as const;
+}
+
 const seedProducts: InsertProduct[] = [
   { slug: "classic-chin-chin", name: "Classic Chin Chin", category: "Food", description: "Golden, crunchy and lightly spiced.", price: 3500, stock: 24, imageUrl: "/manus-storage/async-images/OI9xBlawlZzrQe1CFt29rD/image-2.webp", badge: "Best seller", featured: true },
   { slug: "aviator-shade-no-02", name: "Aviator Shade No. 02", category: "Shades", description: "A clean everyday frame with warm tint.", price: 12000, stock: 10, imageUrl: "/manus-storage/async-images/OI9xBlawlZzrQe1CFt29rD/image-3.webp", badge: "New", featured: true },
