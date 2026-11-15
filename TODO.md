@@ -18,6 +18,7 @@
 - [x] Durable product, stock, order and analytics flows are connected to Drizzle tables and server procedures; admin users can add/archive products, inspect analytics, view orders and update order status.
 - [x] Admin-created products are read by the homepage, Shop page, Food/Shades/Perfumes category pages and product-detail routes, with the seeded catalog retained only as a fallback when the database has no rows.
 - [x] Admin product creation accepts JPG, PNG, WEBP or GIF images directly from the browser file manager, validates a maximum 8MB size, uploads through the authenticated server to durable project storage, previews the selected image, persists its stable `/manus-storage/...` URL and refreshes the storefront catalog after save.
+- [x] Product descriptions are optional during image-first uploads; blank descriptions are accepted and receive a safe Anikks fallback description server-side instead of returning a Zod `too_small` error.
 - [ ] Blog posts, customer reviews, newsletter subscribers, homepage banners and contact enquiries still use the public-page presentation layer and need their own CRUD tables/procedures if the business wants those managed from admin.
 - [x] The project has real route entries for Home, Shop, Food, Shades, Perfumes, Product detail, Services, About Us, Blog, Contact Us and Admin.
 
