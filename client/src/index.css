@@ -18,3 +18,8 @@
 
 /* The homepage is a focused landing page; deeper editorial content lives on dedicated routes. */
 .home-secondary{display:none}.category-card{text-decoration:none;text-align:left}
+
+/* Viewport-fit hardening */
+*,*::before,*::after{box-sizing:border-box}html,body,#root{width:100%;max-width:100%;min-height:100%;overflow-x:hidden}.site-shell{width:100%;max-width:100%;overflow-x:hidden}img,svg,video{max-width:100%}input,textarea,select,button{max-width:100%}.cart-drawer,.checkout-modal{max-width:100vw;min-width:0}.cart-items,.cart-summary,.cart-item,.product-card,.service-card,.blog-post{min-width:0}
+@media(max-width:720px){.site-header{padding-left:20px;padding-right:20px}.main-nav.open{position:absolute;top:100%;left:0;right:0;z-index:35;background:var(--cream);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 22px;display:flex;flex-direction:column;align-items:stretch;gap:0;box-shadow:0 16px 30px #24310b18}.main-nav.open a{padding:13px 0;border-bottom:1px solid #ebeade}.main-nav.open a:last-child{border-bottom:0}.header-actions{gap:10px}.cart-button span{display:none}.top-strip{padding-left:20px;padding-right:20px}.top-strip span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top-strip span:nth-child(2){display:none}}
+@media(max-width:560px){.product-grid{grid-template-columns:1fr}.product-image{height:220px}.drawer-backdrop,.modal-backdrop{width:100vw}.cart-drawer{width:100vw;padding:24px}.checkout-modal{width:calc(100vw - 28px);padding:25px;box-shadow:7px 7px 0 var(--orange)}.checkout-modal h2{font-size:32px}.shop-tools{gap:12px}.shop-tools .search-field{min-width:0}.shop-tools .bag-open-button{flex:none}.inner-hero,.category-hero,.service-page-hero{overflow:hidden}}

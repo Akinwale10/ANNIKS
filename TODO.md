@@ -23,3 +23,4 @@
 - [x] `/manus-routes.json` exists and matches the implemented routes.
 - [x] TypeScript diagnostics and production build complete without actionable errors.
 - [x] The preview server listens on port 3000 and the website is ready for checkpointing to the canonical repository.
+- [x] The UI fits common phone, tablet and desktop viewports without horizontal overflow; narrow-phone grids, drawers, forms and the mobile navigation adapt to the available screen width.
