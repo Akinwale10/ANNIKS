@@ -37,3 +37,4 @@
 - [x] Homepage “Find your next favourite” initially shows a focused product set and adds a below-grid View all products control that expands the current filtered catalog; on mobile, product cards render two across so the expanded catalog forms compact rows.
 - [x] Expanded homepage View all products view includes a responsive Sort by dropdown with Popularity, Price: low to high and Price: high to low options; popularity prioritizes featured products and best-seller badges.
 - [x] Dedicated Shop page initially shows four products, adds a below-grid View all products control for the full filtered catalog, and renders two product cards per row on mobile.
+- [x] WhatsApp/message, phone and location icons are used in the shared delivery strip, homepage contact block, contact page details and footer contact links, with clickable WhatsApp, telephone and Maps destinations.

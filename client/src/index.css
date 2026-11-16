@@ -56,3 +56,6 @@
 /* Shop page product browsing */
 .shop-view-all{display:flex;justify-content:center;margin-top:48px}.shop-view-all .button{min-width:220px}.shop-view-all .button svg{transition:transform .2s ease}.shop-view-all .button:hover svg{transform:translateX(4px)}
 @media(max-width:560px){.shop-page-section .shop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 12px}.shop-page-section .product-image{height:180px}.shop-page-section .product-meta h3{font-size:12px}.shop-page-section .product-card p{min-height:42px}.shop-view-all{margin-top:35px}.shop-view-all .button{width:100%}}
+
+/* Contact icon treatment */
+.top-strip span,.top-strip a{display:inline-flex;align-items:center;gap:6px}.top-strip a{color:#e9edcf}.top-strip a:hover{color:var(--orange)}.footer-contact-link{display:flex!important;align-items:center;gap:7px}.footer-contact-link svg{color:var(--orange);flex:none}.contact-details>a>svg,.contact-details>div>svg{color:var(--orange);flex:none}.contact-details span{display:flex;flex-direction:column;gap:5px}.contact-details span strong{display:block}

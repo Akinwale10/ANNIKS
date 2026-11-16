@@ -7,6 +7,8 @@ import {
   ChevronDown,
   Instagram,
   Menu,
+  MapPin,
+  MessageCircle,
   Minus,
   PackageCheck,
   Phone,
@@ -180,7 +182,7 @@ export default function Home() {
 
   return (
     <div className="site-shell">
-      <div className="top-strip"><span>Free delivery on orders over ₦25,000 in Ogun</span><span>WhatsApp orders: +234 916 225 9886</span></div>
+      <div className="top-strip"><span><MapPin size={11} /> Free delivery on orders over ₦25,000 in Ogun</span><a href="https://wa.me/2349162259886" target="_blank" rel="noreferrer"><MessageCircle size={11} /> WhatsApp orders: +234 916 225 9886</a></div>
       <header className="site-header">
         <Link className="brand" href="/" onClick={() => setMenuOpen(false)}><span className="brand-mark">✦</span><span>anikks<small>treats & trend</small></span></Link>
         <nav className={menuOpen ? "main-nav open" : "main-nav"}>
@@ -241,7 +243,7 @@ export default function Home() {
 
         <section className="newsletter-section"><div><span className="eyebrow light">Keep in touch</span><h2>Good things,<br /><em>in your inbox.</em></h2></div><form onSubmit={(event) => { event.preventDefault(); toast.success("You’re on the list.", { description: "Watch your inbox for the good stuff." }); }}><p>New drops, helpful tips and the occasional sweet surprise. No noise.</p><div className="newsletter-input"><input type="email" required placeholder="Your email address" /><button type="submit"><ArrowRight size={19} /></button></div><small>By subscribing, you agree to receive Anikks updates.</small></form></section>
 
-        <section className="contact-section" id="contact"><div><span className="eyebrow">Come say hello</span><h2>Let’s make it<br /><em>easy for you.</em></h2><p>Questions, orders or just a quick hello? We’re here.</p></div><div className="contact-details"><a href="https://wa.me/2349162259886" target="_blank" rel="noreferrer"><span>WhatsApp</span><strong>+234 916 225 9886</strong></a><a href="tel:+2348124705254"><span>Telephone</span><strong>+234 812 470 5254</strong></a><div><span>Find us in</span><strong>Ifo & Ilaro, Ogun State</strong></div></div></section>
+        <section className="contact-section" id="contact"><div><span className="eyebrow">Come say hello</span><h2>Let’s make it<br /><em>easy for you.</em></h2><p>Questions, orders or just a quick hello? We’re here.</p></div><div className="contact-details"><a href="https://wa.me/2349162259886" target="_blank" rel="noreferrer"><MessageCircle size={19} /><span>WhatsApp<strong>+234 916 225 9886</strong></span></a><a href="tel:+2348124705254"><Phone size={19} /><span>Telephone<strong>+234 812 470 5254</strong></span></a><div><MapPin size={19} /><span>Find us in<strong>Ifo & Ilaro, Ogun State</strong></span></div></div></section>
       </main>
 
       <footer className="site-footer"><div className="footer-brand"><Link className="brand inverse" href="/"><span className="brand-mark">✦</span><span>anikks<small>treats & trend</small></span></Link><p>Quality treats, trend-led finds and everyday essentials — all in one happy place.</p><div className="socials"><a href="https://instagram.com" aria-label="Instagram"><Instagram size={17} /></a><a href="https://tiktok.com" aria-label="TikTok">♪</a></div></div><div className="footer-links"><div><span>Explore</span><Link href="/shop">Shop all</Link><Link href="/about">About us</Link><Link href="/services">Our services</Link></div><div><span>Need help?</span><Link href="/contact">Contact us</Link><a href="https://wa.me/2349162259886">WhatsApp us</a><a href="tel:+2348124705254">Call +234 812 470 5254</a></div></div><div className="footer-bottom"><span>© 2026 Anikks Treats & Trend</span><span>Made with care in Ogun State, Nigeria</span><span>Privacy · Terms</span></div></footer>
