@@ -30,3 +30,5 @@
 - [x] The hero artwork is a smooth product carousel driven by live catalog images, with fallback brand imagery, auto-advance, hover/focus pause, previous/next controls, slide dots, product captions and links to the relevant product or category page.
 - [x] Homepage product pictures and names in “Find your next favourite” open the matching product-detail route; cart rows expose a visible trash/delete action; and an open mobile hamburger menu closes when the user taps outside it.
 - [x] Hero text uses a staggered typewriter effect for the eyebrow, headline, supporting copy and note, with a blinking caret, delayed CTA reveal and immediate full-text rendering under `prefers-reduced-motion`.
+- [x] Persisted cart data is reconciled against the current storefront catalog so deleted or unavailable products disappear instead of showing as ghost items; cart totals/counts only include visible products; and the homepage exposes an always-available Open your bag shortcut.
+- [x] The hero headline continues with a repeating type/delete typewriter sequence through “Great finds.”, “Everyday joy.” and “Your kind of day.” while preserving the reduced-motion fallback.

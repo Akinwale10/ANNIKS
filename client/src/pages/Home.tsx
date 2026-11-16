@@ -51,26 +51,46 @@ const products: Product[] = [
 ];
 
 const naira = (value: number) => `₦${value.toLocaleString("en-NG")}`;
+const heroHeadlinePhrases = ["Great finds.", "Everyday joy.", "Your kind of day."];
 
-function TypewriterText({ text, delay = 0, speed = 42 }: { text: string; delay?: number; speed?: number }) {
+function TypewriterText({ text, delay = 0, speed = 42, loop = false }: { text: string | string[]; delay?: number; speed?: number; loop?: boolean }) {
+  const phrases = useMemo(() => Array.isArray(text) ? text : [text], [text]);
   const [value, setValue] = useState("");
   useEffect(() => {
-    let interval: number | undefined;
+    let timer: number | undefined;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) { setValue(text); return undefined; }
+    if (reducedMotion) { setValue(phrases[0]); return undefined; }
     setValue("");
-    const start = window.setTimeout(() => {
-      let index = 0;
-      interval = window.setInterval(() => {
-        index += 1;
-        setValue(text.slice(0, index));
-        if (index >= text.length && interval) window.clearInterval(interval);
-      }, speed);
-    }, delay);
-    return () => { window.clearTimeout(start); if (interval) window.clearInterval(interval); };
-  }, [delay, speed, text]);
-  const complete = value.length === text.length;
-  return <span className="typewriter-text" aria-label={text}>{value}<span className={`typewriter-caret ${complete ? "complete" : ""}`} aria-hidden="true">▌</span></span>;
+    let phraseIndex = 0;
+    let characterIndex = 0;
+    let deleting = false;
+    const tick = () => {
+      const phrase = phrases[phraseIndex];
+      if (!deleting) {
+        characterIndex += 1;
+        setValue(phrase.slice(0, characterIndex));
+        if (characterIndex >= phrase.length) {
+          if (!loop) return;
+          deleting = true;
+          timer = window.setTimeout(tick, 1800);
+          return;
+        }
+      } else {
+        characterIndex = Math.max(0, characterIndex - 1);
+        setValue(phrase.slice(0, characterIndex));
+        if (characterIndex === 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+      timer = window.setTimeout(tick, deleting ? Math.max(18, speed / 2) : speed);
+    };
+    timer = window.setTimeout(tick, delay);
+    return () => { if (timer) window.clearTimeout(timer); };
+  }, [delay, loop, phrases, speed]);
+  const label = phrases.join(" / ");
+  const complete = !loop && value.length === phrases[0].length;
+  return <span className="typewriter-text" aria-label={label}>{value}<span className={`typewriter-caret ${complete ? "complete" : ""}`} aria-hidden="true">▌</span></span>;
 }
 
 export default function Home() {
@@ -111,6 +131,11 @@ export default function Home() {
     if (saved) setCart(JSON.parse(saved));
   }, []);
   useEffect(() => {
+    if (liveCatalog.isLoading) return;
+    const validIds = new Set(storefrontProducts.map((product) => product.id));
+    setCart((current) => Object.fromEntries(Object.entries(current).filter(([id, quantity]) => validIds.has(Number(id)) && Number.isFinite(quantity) && quantity > 0)));
+  }, [liveCatalog.isLoading, storefrontProducts]);
+  useEffect(() => {
     localStorage.setItem("anikks-cart", JSON.stringify(cart));
   }, [cart]);
 
@@ -121,7 +146,7 @@ export default function Home() {
   }).sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured))), [category, query, storefrontProducts]);
 
   const cartItems = storefrontProducts.filter((product) => cart[product.id]);
-  const cartCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
+  const cartCount = cartItems.reduce((sum, product) => sum + cart[product.id], 0);
   const cartTotal = cartItems.reduce((sum, product) => sum + product.price * cart[product.id], 0);
 
   const addToCart = (id: number) => {
@@ -154,7 +179,7 @@ export default function Home() {
         <div className="header-actions">
           <Link className="icon-button" aria-label="Search" href="/shop"><Search size={19} /></Link>
           <Link className="icon-button account-button" aria-label="Account" href="/admin"><UserRound size={19} /></Link>
-          <button className="cart-button" onClick={() => setCartOpen(true)}><ShoppingBag size={19} /><span>Bag</span>{cartCount > 0 && <b>{cartCount}</b>}</button>
+          <button className="cart-button" aria-label={`Open shopping bag${cartCount ? ` with ${cartCount} item${cartCount === 1 ? "" : "s"}` : ""}`} title="Open shopping bag" onClick={() => setCartOpen(true)}><ShoppingBag size={19} /><span>Bag</span>{cartCount > 0 && <b>{cartCount}</b>}</button>
           <button className="mobile-menu" aria-label="Toggle menu" onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button>
         </div>
       </header>
@@ -164,9 +189,9 @@ export default function Home() {
         <section className="hero-section">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> <TypewriterText text="Your everyday, elevated" delay={120} speed={48} /></div>
-            <h1><TypewriterText text="Good taste." delay={420} speed={75} /><br /><em><TypewriterText text="Great finds." delay={1200} speed={75} /></em></h1>
+            <h1><TypewriterText text="Good taste." delay={420} speed={75} /><br /><em><TypewriterText text={heroHeadlinePhrases} delay={1200} speed={75} loop /></em></h1>
             <p className="hero-lede"><TypewriterText text="Your one-stop shop for food, fashion and everyday essentials. Curated with care, delivered with a smile." delay={2100} speed={24} /></p>
-            <div className="hero-actions typewriter-actions"><Link className="button button-orange" href="/shop">Shop the edit <ArrowRight size={17} /></Link><Link className="text-link" href="/services">Explore our services <ArrowRight size={16} /></Link></div>
+            <div className="hero-actions typewriter-actions"><Link className="button button-orange" href="/shop">Shop the edit <ArrowRight size={17} /></Link><Link className="text-link" href="/services">Explore our services <ArrowRight size={16} /></Link><button className="text-link cart-home-link" onClick={() => setCartOpen(true)}><ShoppingBag size={16} /> {cartCount > 0 ? `View your bag (${cartCount})` : "Open your bag"}</button></div>
             <div className="hero-note"><span className="note-dot" /><span><TypewriterText text="Small joys, thoughtfully sourced." delay={5000} speed={34} /></span></div>
           </div>
           <div className="hero-art" onMouseEnter={() => setHeroPaused(true)} onMouseLeave={() => setHeroPaused(false)} onFocus={() => setHeroPaused(true)} onBlur={() => setHeroPaused(false)}>
