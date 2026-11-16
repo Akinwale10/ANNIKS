@@ -34,3 +34,4 @@
 - [x] The hero headline continues with a repeating type/delete typewriter sequence through “Great finds.”, “Everyday joy.” and “Your kind of day.” while preserving the reduced-motion fallback.
 - [x] Shared hamburger navigation links and header icons close the menu reliably when activated, the brand/search/account/bag actions are clickable, the menu has accessible `aria-expanded` and close labels, and tapping outside the open mobile menu dismisses it.
 - [x] Blog supports journal filters for Food & hosting, Style notes, Scent edit and Anikks updates, with four substantial five-minute-read articles, working Read story expansion, metadata, long-form paragraphs, Back to journal and Talk to Anikks actions.
+- [x] Homepage “Find your next favourite” initially shows a focused product set and adds a below-grid View all products control that expands the current filtered catalog; on mobile, product cards render two across so the expanded catalog forms compact rows.
