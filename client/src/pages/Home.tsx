@@ -101,6 +101,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [showAllProducts, setShowAllProducts] = useState(false);
+  const [sortBy, setSortBy] = useState<"popular" | "price-low" | "price-high">("popular");
   const liveCatalog = trpc.catalog.list.useQuery(undefined, { retry: false });
   const storefrontProducts = useMemo(() => liveCatalog.data?.length ? liveCatalog.data.map(fromApiProduct) : products, [liveCatalog.data]);
   const heroSlides = useMemo(() => {
@@ -144,7 +145,14 @@ export default function Home() {
     const matchesCategory = category === "All" || product.category === category;
     const text = `${product.name} ${product.description} ${product.category}`.toLowerCase();
     return matchesCategory && text.includes(query.toLowerCase());
-  }).sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured))), [category, query, storefrontProducts]);
+  }).sort((a, b) => {
+    if (sortBy === "price-low") return a.price - b.price;
+    if (sortBy === "price-high") return b.price - a.price;
+    const featuredDifference = Number(Boolean(b.featured)) - Number(Boolean(a.featured));
+    if (featuredDifference) return featuredDifference;
+    const bestSellerDifference = Number(b.badge?.toLowerCase().includes("seller")) - Number(a.badge?.toLowerCase().includes("seller"));
+    return bestSellerDifference;
+  }), [category, query, sortBy, storefrontProducts]);
   const visibleProducts = showAllProducts ? filteredProducts : filteredProducts.slice(0, 3);
 
   const cartItems = storefrontProducts.filter((product) => cart[product.id]);
@@ -220,7 +228,7 @@ export default function Home() {
           <div className="shop-topline"><div><span className="eyebrow">The Anikks edit</span><h2>Find your next favourite.</h2></div><div className="search-field"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products" /></div></div>
           <div className="filter-row"><div className="filter-tabs">{["All", "Food", "Shades", "Perfumes"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item as Category)}>{item}</button>)}</div><span className="result-count">{filteredProducts.length} pieces to love</span></div>
           <div className="product-grid">{visibleProducts.map((product) => <article className="product-card" key={product.id}><div className="product-image"><Link className="product-image-link" href={productHref(product)} aria-label={`View ${product.name}`}><img src={product.image} alt={product.name} /></Link>{product.badge && <span className="product-badge">{product.badge}</span>}<button className="quick-add" aria-label={`Add ${product.name} to cart`} onClick={() => addToCart(product.id)}><Plus size={18} /></button></div><div className="product-meta"><div><span className="product-category">{product.category}</span><h3><Link href={productHref(product)}>{product.name}</Link></h3></div><strong>{naira(product.price)}</strong></div><p>{product.description}</p><div className="product-bottom"><span className={product.stock === "Low stock" ? "stock low" : "stock"}><span />{product.stock}</span><button onClick={() => addToCart(product.id)}>Add to bag</button></div></article>)}</div>
-          {filteredProducts.length > 3 && <div className="view-all-products"><button className="button button-outline" onClick={() => setShowAllProducts((value) => !value)}>{showAllProducts ? "Show fewer products" : `View all ${filteredProducts.length} products`} <ArrowRight size={16} /></button></div>}
+          {filteredProducts.length > 3 && <div className="view-all-products"><div className="product-view-controls">{showAllProducts && <label className="product-sort-label">Sort by <select aria-label="Sort products" value={sortBy} onChange={(event) => setSortBy(event.target.value as "popular" | "price-low" | "price-high")}><option value="popular">Popularity</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option></select></label>}<button className="button button-outline" onClick={() => setShowAllProducts((value) => !value)}>{showAllProducts ? "Show fewer products" : `View all ${filteredProducts.length} products`} <ArrowRight size={16} /></button></div></div>}
         </section>
 
         <section className="service-band"><div className="service-copy"><span className="eyebrow light">More than shopping</span><h2>Good things,<br /><em>made easy.</em></h2><p>From quick WhatsApp orders to everyday financial services, we’re here to make the little things feel lighter.</p><Link className="button button-cream" href="/services">Talk to our team <ArrowRight size={17} /></Link></div><div className="service-list"><div className="service-item"><span className="service-icon"><Truck /></span><div><h3>Easy orders & delivery</h3><p>Send us a WhatsApp, we’ll handle the rest.</p></div><ArrowRight size={18} /></div><div className="service-item"><span className="service-icon"><Zap /></span><div><h3>Moniepoint services</h3><p>Loans, POS, ATM, account opening and more.</p></div><ArrowRight size={18} /></div><div className="service-item"><span className="service-icon"><PackageCheck /></span><div><h3>Quality, always</h3><p>Thoughtful picks, checked before they reach you.</p></div><ArrowRight size={18} /></div></div></section>
